@@ -1,0 +1,52 @@
+@startuml
+title Банк "Стандарт" Container Diagram
+
+top to bottom direction
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+Person(Client, "Клиент банка", "Клиент банка, который хочет уточнить данные по ставкам")
+Person(ManagerCallCentre, "Менеджер кол-центра", "Менеджер отвечает на звонки клиентов")
+Person(ManagerCallCentrePartner, "Менеджер кол-центра партнера", "Менеджер отвечает на звонки клиентов")
+Person(ManagerBackOffice, "Менеджер бек-офиса", "Менеджер формирующий ставки по депозитам")
+
+Rel(Client, ManagerCallCentre, "Звонок по ставкам депозитов")
+Rel(Client, ManagerCallCentrePartner, "Звонок по ставкам депозитов")
+
+System_Ext(CallCenterPartner, "Кол-центр партнера", "Обработка звонков клиентов")
+
+Container_Boundary(CallCentre, "CRM система кол-центра") {
+  Component(CallCentreFront, "Фронтенд системы кол-центра", "React.js", )
+  Component(CallCentreBack, "Бекенд системы кол-центра", "Java Spring Boot", )
+  ComponentDb(CallCentreDb, "База данных", "PostgreSQL")
+  Rel(CallCentreFront, CallCentreBack, "Обмен данными", "REST API")
+  Rel(CallCentreBack, CallCentreDb, "Обмен данными", "SQL")
+}
+
+Container_Boundary(BankSystem, "Система банка 'Стандарт'") {
+  Component(ABS, "Автоматизированная банковская система (АБС)", "Delphi", "Десктопный клиент. Основная логика работы системы реализована процедурами на PL-SQL")
+  ComponentDb(ABSDb, "База данных", "Oracle")
+  Rel(ABS, ABSDb, "Обмен данными", "SQL")
+
+  Component(RequestDepositMS, "Микросервис заявок", "Java Spring Boot", "API обработки заявок")
+  ComponentDb(RequestDepositMSDb, "База данных", "PostgreSQL")
+  Rel(RequestDepositMS, RequestDepositMSDb, "Обмен данными", "SQL")
+
+  Rel(ABS, RequestDepositMS, "Получение заявок, закрытие заявок менеджером", "REST API, HTTPS+TLS1.3")
+
+  Component(RateDepositMS, "Микросервис ставок по депозитам", "Java Spring Boot", "API обработки ставок по депозитам")
+  ComponentDb(RateDepositMSDb, "База данных", "PostgreSQL")
+  Rel(RateDepositMS, RateDepositMSDb, "Обмен данными", "SQL")
+
+  Rel(ABS, RateDepositMS, "Получение ставок по депозитам, изменение ставок по депозитам", "REST API, HTTPS+TLS1.3")
+}
+
+Rel(CallCentreBack, RequestDepositMS, "Получение ставок по депозитам", "REST API, HTTPS+TLS1.3")
+
+Rel(ManagerCallCentre, CallCentreFront, "Обработка заявок на открытие депозита, запрос данных по ставкам депозитов")
+Rel(ManagerCallCentrePartner, CallCenterPartner, "Получение данных по ставкам депозитов")
+Rel(ManagerBackOffice, ABS, "Изменение ставок по депозитам")
+Rel(RateDepositMS, CallCenterPartner, "Отправка файла с актуальными ставками")
+
+
+@enduml

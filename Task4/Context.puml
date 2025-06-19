@@ -1,0 +1,26 @@
+@startuml
+title Банк "Стандарт" Context Diagram
+
+top to bottom direction
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+Person(Client, "Клиент", "Посетитель сайта, который отправил заявку на депозит")
+Person(ManagerCallCentre, "Менеджер кол-центра", "Менеджер обрабатывает заявки по звонкам или от сайта")
+Person(ManagerCallCentrePartner, "Менеджер кол-центра партнера", "Менеджер отвечает на звонки клиентов")
+Person(ManagerBackOffice, "Менеджер бек-офиса", "Менеджер обрабатывает и создает депозиты по заявкам от интернет-банка")
+
+System(StandartSystem, "Система банка 'Стандарт'", "Систем банка, обработка заявок на депозиты, создание депозитов, СМС-оповещение")
+
+System_Ext(CallCenterPartner, "Кол-центр партнера", "Обработка звонков клиентов")
+
+Rel(Client, ManagerCallCentre, "Звонок по ставкам на депозит")
+Rel(Client, ManagerCallCentrePartner, "Звонок по ставкам на депозит")
+
+Rel(ManagerCallCentrePartner, CallCenterPartner, "Получение данных по ставкам депозитов, Обработка звонков клиентов")
+Rel(ManagerCallCentre, StandartSystem, "Получение данных по ставкам депозитов, Обработка звонков клиентов")
+Rel(ManagerBackOffice, StandartSystem, "Обновление ставок по депозитам")
+
+Rel(StandartSystem, CallCenterPartner, "Отправка актуальных данных по ставкам депозитов")
+
+@enduml
