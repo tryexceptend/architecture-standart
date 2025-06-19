@@ -1,0 +1,49 @@
+@startuml
+title Банк "Стандарт" Container Diagram
+
+top to bottom direction
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+Person(SiteUser, "Посетитель сайта", "Посетитель сайта, который отправил заявку на депозит")
+Person(AppUser, "Пользователь интернет-банка", "Авторизированный пользователь интернет-банка")
+Person(ManagerCallCentre, "Менеджер кол-центра", "Менеджер обрабатывает заявки по звонкам или от сайта")
+Person(ManagerBackOffice, "Менеджер бек-офиса", "Менеджер обрабатывает и создает депозиты по заявкам от интернет-банка")
+
+Container_Boundary(InternetBank, "Интернет-банк") {
+  Component(InternetBankApp, "Web Application", "ASP.NET MVC 4.5 (.NET Framework 4.5)", "Веб приложение интренет-банка")
+  ComponentDb(InternetBankDb, "База данных", "MS SQL")
+
+  Rel(InternetBankApp, InternetBankDb, "Обмен данными", "SQL")
+}
+
+Component(SiteApp, "WebSite", "PHP и React.js", "Вебсайт, с данными по депозитам и ставкам")
+Container(CallCentre, "Система кол-центра", "React.js, Java Spring Boot", "CRM система кол-центра")
+Rel(SiteUser, SiteApp, "Запрос на создание депозита по ставке с сайта")
+Rel(SiteApp, CallCentre, "Формирование заявки на открытие депозита","HTTPS+TLS1.3")
+
+Container_Boundary(BankSystem, "Система банка 'Стандарт'") {
+  Component(ABS, "Автоматизированная банковская система (АБС)", "Delphi", "Десктопный клиент. Основная логика работы системы реализована процедурами на PL-SQL")
+  ComponentDb(ABSDb, "База данных", "Oracle")
+  Rel(ABS, ABSDb, "Обмен данными", "SQL")
+
+  Component(RequestDepositMS, "Микросервис заявок", "Java Spring Boot", "API обработки заявок")
+  ComponentDb(RequestDepositMSDb, "База данных", "PostgreSQL")
+  Rel(RequestDepositMS, RequestDepositMSDb, "Обмен данными", "SQL")
+  
+  Component(SMSGateway, "СМС-шлюз", "", "Взаимодействие с телеком-оператором")
+  Rel(ABS, SMSGateway, "Отправка уведомлений", "")
+
+  Rel(ABS, RequestDepositMS, "Получение заявок, закрытие заявок менеджером", "REST API, HTTPS+TLS1.3")
+}
+
+Rel(InternetBankApp, RequestDepositMS, "Формирование заявки на депозит","REST API, HTTPS+TLS1.3")
+
+System_Ext(SMSOperator, "Телеком оператор", "Отправка СМС клиентам")
+Rel(AppUser, InternetBankApp, "Запрос на создание депозита")
+Rel(SMSGateway, SMSOperator, "Отправка СМС клиентам")
+
+Rel(ManagerCallCentre, CallCentre, "Обработка заявок на открытие депозита")
+Rel(ManagerBackOffice, ABS, "Обработка заявок на депозит, открытие депозита")
+
+@enduml

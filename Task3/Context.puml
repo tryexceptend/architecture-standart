@@ -1,0 +1,24 @@
+@startuml
+title Банк "Стандарт" Context Diagram
+
+top to bottom direction
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+Person(SiteUser, "Посетитель сайта", "Посетитель сайта, который отправил заявку на депозит")
+Person(AppUser, "Пользователь интернет-банка", "Авторизированный пользователь интернет-банка")
+Person(ManagerCallCentre, "Менеджер кол-центра", "Менеджер обрабатывает заявки по звонкам или от сайта")
+Person(ManagerBackOffice, "Менеджер бек-офиса", "Менеджер обрабатывает и создает депозиты по заявкам от интернет-банка")
+
+System(StandartSystem, "Система банка 'Стандарт'", "Систем банка, обработка заявок на депозиты, создание депозитов, СМС-оповещение")
+
+System_Ext(SMSOperator, "Телеком оператор", "Отправка СМС клиентам")
+
+Rel(SiteUser, StandartSystem, "Подача заявки на депозит через сайт", "HTTPS+TLS1.3, Ratelimit")
+Rel(AppUser, StandartSystem, "Подача заявки на открытие депозита через интернет-банк", "HTTPS+TLS1.3")
+Rel(ManagerCallCentre, StandartSystem, "Обработка заявки на депозит")
+Rel(ManagerCallCentre, SiteUser, "Звонок для уточнения деталей и предложением посетить офис")
+Rel(ManagerBackOffice, StandartSystem, "Обработка заявки на создание депозита")
+Rel(StandartSystem, SMSOperator, "Отправка СМС-уведомлений, отправка СМС с одноразовым кодом")
+
+@enduml
